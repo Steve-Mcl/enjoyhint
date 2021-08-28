@@ -8,30 +8,32 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xbsoftware/enjoyhint.git"
+    "url": "https://github.com/steve-mcl/enjoyhint.git"
   },
   "keywords": [
     "enjoyhint",
+    "intro",
     "hint",
-    "xbs",
-    "tutorials"
+    "walkthrough",
+    "onboarding",
+    "tutorial"
   ],
-  "author": "XB Software",
+  "author": "Steve-Mcl",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/xbsoftware/enjoyhint/issues"
+    "url": "https://github.com/steve-mcl/enjoyhint/issues"
   },
-  "homepage": "https://github.com/xbsoftware/enjoyhint",
+  "homepage": "https://github.com/steve-mcl/enjoyhint",
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-concat": "^0.5.1",
-    "grunt-contrib-cssmin": "^0.11.0",
-    "grunt-contrib-jshint": "^0.11.2",
-    "grunt-contrib-uglify": "^0.9.1"
+    "grunt": "^1.4.1",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-cssmin": "^4.0.0",
+    "grunt-contrib-jshint": "^3.0.0",
+    "grunt-contrib-uglify": "^5.0.1"
   },
   "dependencies": {
-    "jquery": "~3.5.1",
-    "jquery.scrollto": "^2.1.2",
+    "jquery": "~3.6.0",
+    "jquery.scrollto": "^2.1.3",
     "kinetic": "^5.2.0"
   }
 }

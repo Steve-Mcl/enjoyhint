@@ -7,13 +7,13 @@ module.exports = function(grunt){
             },
             dist:{
                 src:['src/*.js'],
-                dest: '<%= pkg.name %>.js'
+                dest: 'dist/<%= pkg.name %>.js'
             }
         },
         uglify: {
             main: {
                 files: {
-                    '<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+                    'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
                 }
             }
         },
@@ -31,7 +31,7 @@ module.exports = function(grunt){
         cssmin: {
             combine: {
                 files: {
-                    'enjoyhint.css': ['src/jquery.enjoyhint.css']
+                    'dist/enjoyhint.css': ['src/jquery.enjoyhint.css']
                 }
             }
         }
