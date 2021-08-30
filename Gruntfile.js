@@ -1,18 +1,18 @@
-module.exports = function(grunt){
+module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        concat:{
+        concat: {
             options: {
                 separator: ';'
             },
-            dist:{
-                src:['src/*.js'],
+            dist: {
+                src: ['src/*.js'],
                 dest: 'dist/<%= pkg.name %>.js'
             }
         },
         copy: {
             font: {
-                files:[
+                files: [
                     {
                         cwd: 'src',
                         src: [

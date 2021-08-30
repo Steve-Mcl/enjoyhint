@@ -1,4 +1,4 @@
-CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
   if (w < 2 * r) r = w / 2;
   if (h < 2 * r) r = h / 2;
   this.beginPath();
@@ -11,30 +11,30 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
   return this;
 };
 
-(function(factory) {
+(function (factory) {
   'use strict';
-	if (typeof define === 'function' && define.amd) {
-		// AMD
-		define(['jquery', 'kinetic'], factory);
-	} else if (typeof module !== 'undefined' && module.exports) {
-		// CommonJS
-		module.exports = factory(require('jquery'), require('kinetic'));
-	} else {
-		// Global
-		factory(jQuery, Kinetic);
-	}
-})(function($, Kinetic) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD
+    define(['jquery', 'kinetic'], factory);
+  } else if (typeof module !== 'undefined' && module.exports) {
+    // CommonJS
+    module.exports = factory(require('jquery'), require('kinetic'));
+  } else {
+    // Global
+    factory(jQuery, Kinetic);
+  }
+})(function ($, Kinetic) {
   var that;
   var originalWidth = window.innerWidth;
   var originalHeight = window.innerHeight;
 
   var methods = {
-    init: function(options) {
-      return this.each(function() {
+    init: function (options) {
+      return this.each(function () {
         var defaults = {
-          onNextClick: function() {},
-          onSkipClick: function() {},
-          onPrevClick: function() {},
+          onNextClick: function () { },
+          onSkipClick: function () { },
+          onPrevClick: function () { },
 
           animation_time: 800
         };
@@ -42,7 +42,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
         this.enjoyhint_obj = {};
         that = this.enjoyhint_obj;
 
-        that.resetComponentStuff = function() {
+        that.resetComponentStuff = function () {
           originalWidth = window.innerWidth;
           originalHeight = window.innerHeight;
         };
@@ -104,25 +104,25 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
         ).appendTo(that.enjoyhint);
         that.$canvas = $(
           '<canvas id="' +
-            canvas_id +
-            '" width="' +
-            that.canvas_size.w +
-            '" height="' +
-            that.canvas_size.h +
-            '" class="' +
-            that.cl.main_canvas +
-            '">'
+          canvas_id +
+          '" width="' +
+          that.canvas_size.w +
+          '" height="' +
+          that.canvas_size.h +
+          '" class="' +
+          that.cl.main_canvas +
+          '">'
         ).appendTo(that.enjoyhint);
         that.$svg = $(
           '<svg width="' +
-            that.canvas_size.w +
-            '" height="' +
-            that.canvas_size.h +
-            '" class="' +
-            that.cl.main_canvas +
-            " " +
-            that.cl.main_svg +
-            '">'
+          that.canvas_size.w +
+          '" height="' +
+          that.canvas_size.h +
+          '" class="' +
+          that.cl.main_canvas +
+          " " +
+          that.cl.main_svg +
+          '">'
         ).appendTo(that.enjoyhint_svg_wrapper);
 
         var defs = $(makeSVG("defs"));
@@ -141,7 +141,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
         var arrowhead = $(
           makeSVG("path", {
             style: "fill:none; stroke:rgb(255,255,255); stroke-width:2",
-             d: "M 0 0 c 12 11 12 9 0 20",
+            d: "M 0 0 c 12 11 12 9 0 20",
             id: "arrowhead"
           })
         );
@@ -174,7 +174,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           .clone()
           .appendTo(that.enjoyhint);
 
-        var stopPropagation = function(e) {
+        var stopPropagation = function (e) {
           e.stopImmediatePropagation();
         };
 
@@ -187,7 +187,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
         that.$skip_btn = $("<div>", { class: that.cl.skip_btn })
           .appendTo(that.enjoyhint)
           .html("Skip")
-          .click(function(e) {
+          .click(function (e) {
             that.hide();
             that.options.onSkipClick();
           });
@@ -195,14 +195,14 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
         that.$next_btn = $("<div>", { class: that.cl.next_btn })
           .appendTo(that.enjoyhint)
           .html("Next")
-          .click(function(e) {
+          .click(function (e) {
             that.options.onNextClick();
           });
 
         that.$close_btn = $("<div>", { class: that.cl.close_btn })
           .appendTo(that.enjoyhint)
           .html("Close")
-          .click(function(e) {
+          .click(function (e) {
             that.hide();
             that.options.onSkipClick();
           });
@@ -210,12 +210,12 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
         that.$prev_btn = $("<div>", { class: that.cl.previous_btn })
           .appendTo(that.enjoyhint)
           .html("Previous")
-          .click(function(e) {
+          .click(function (e) {
             that.options.onPrevClick();
           });
 
 
-        that.$canvas.mousedown(function(e) {
+        that.$canvas.mousedown(function (e) {
           $("canvas").css({ left: "4000px" });
 
           var BottomElement = document.elementFromPoint(e.clientX, e.clientY);
@@ -235,7 +235,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           center_y: -shape_init_shift,
           width: 0,
           height: 0,
-          sceneFunc: function(context) {
+          sceneFunc: function (context) {
             var ctx = this.getContext("2d")._context;
             var pos = this.pos;
             var def_comp = ctx.globalCompositeOperation;
@@ -265,7 +265,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
 
         var doit;
 
-        $(window).on("resize", function() {
+        $(window).on("resize", function () {
           clearTimeout(doit);
           $('.enjoyhint_next_btn').css('visibility', 'hidden');
           $('.enjoyhint_prev_btn').css('visibility', 'hidden');
@@ -282,7 +282,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           var boundingClientRect = $(
             that.stepData.enjoyHintElementSelector
           )[0].getBoundingClientRect();
-          
+
           that.shape.attrs.center_x = Math.round(
             boundingClientRect.left + boundingClientRect.width / 2
           );
@@ -292,15 +292,15 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           that.shape.attrs.width = boundingClientRect.width + 11;
           that.shape.attrs.height = boundingClientRect.height + 11;
 
-          function renderAfterResize(){
+          function renderAfterResize() {
             var newDataCoords = $(that.stepData.enjoyHintElementSelector).get(0).getBoundingClientRect();
 
-            that.stepData.center_x = newDataCoords.left + newDataCoords.width/2;
-            that.stepData.center_y = newDataCoords.top + newDataCoords.height/2;
+            that.stepData.center_x = newDataCoords.left + newDataCoords.width / 2;
+            that.stepData.center_y = newDataCoords.top + newDataCoords.height / 2;
             that.stepData.width = newDataCoords.width + 11;
             that.stepData.height = newDataCoords.height + 11;
 
-            that.render(that.stepData, that.customBtnProps, function() {
+            that.render(that.stepData, that.customBtnProps, function () {
               console.log("resize done - showing buttons")
               $('.enjoyhint_next_btn').css('visibility', 'visible');
               $('.enjoyhint_prev_btn').css('visibility', 'visible');
@@ -309,9 +309,9 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
             });
           }
 
-          doit = setTimeout(function() {
-            if(boundingClientRect.top < 0 || boundingClientRect.bottom > (window.innerHeight || document.documentElement.clientHeight)){
-              $(that.options.elementToScroll).scrollTo(that.stepData.enjoyHintElementSelector, 150, {offset: -200, onAfter:renderAfterResize});
+          doit = setTimeout(function () {
+            if (boundingClientRect.top < 0 || boundingClientRect.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
+              $(that.options.elementToScroll).scrollTo(that.stepData.enjoyHintElementSelector, 150, { offset: -200, onAfter: renderAfterResize });
             }
             else renderAfterResize();
           }, 150);
@@ -337,11 +337,11 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           that.kinetic_stage.draw();
         });
 
-        that.show = function() {
+        that.show = function () {
           that.enjoyhint.removeClass(that.cl.hide);
         };
 
-        that.hide = function() {
+        that.hide = function () {
           that.enjoyhint.addClass(that.cl.hide);
 
           var tween = new Kinetic.Tween({
@@ -356,47 +356,47 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
 
         that.hide();
 
-        that.hidePrevBtn = function() {
+        that.hidePrevBtn = function () {
           console.log("hidePrevBtn")
           that.$prev_btn.addClass(that.cl.hide);
           that.prevBtn = "hide";
         };
-        that.showPrevBtn = function() {
+        that.showPrevBtn = function () {
           console.log("showPrevBtn")
           that.$prev_btn.removeClass(that.cl.hide);
           that.prevBtn = "show";
         };
-        
-        that.hideNextBtn = function() {
+
+        that.hideNextBtn = function () {
           console.log("hideNextBtn")
           that.$next_btn.addClass(that.cl.hide);
           that.nextBtn = "hide";
         };
-        that.showNextBtn = function() {
+        that.showNextBtn = function () {
           console.log("showNextBtn")
           that.$next_btn.removeClass(that.cl.hide);
           that.nextBtn = "show";
         };
 
-        that.hideSkipBtn = function() {
+        that.hideSkipBtn = function () {
           that.$skip_btn.addClass(that.cl.hide);
           that.skipBtn = "hide";
-        }; 
-        that.showSkipBtn = function() {
+        };
+        that.showSkipBtn = function () {
           that.$skip_btn.removeClass(that.cl.hide);
           that.skipBtn = "show";
         };
 
-        that.hideCloseBtn = function() {
+        that.hideCloseBtn = function () {
           that.$close_btn.addClass(that.cl.hide);
           that.closeBtn = "hide";
         };
-        that.showCloseBtn = function() {
+        that.showCloseBtn = function () {
           that.$close_btn.removeClass(that.cl.hide);
           that.closeBtn = "show";
         };
 
-        that.renderCircle = function(data) {
+        that.renderCircle = function (data) {
           var r = data.r || 0;
           var x = data.x || 0;
           var y = data.y || 0;
@@ -447,7 +447,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           };
         };
 
-        that.renderRect = function(data, timeout) {
+        that.renderRect = function (data, timeout) {
           var r = data.r || 0;
           var x = data.x || 0;
           var y = data.y || 0;
@@ -502,7 +502,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           };
         };
 
-        that.renderLabel = function(data) {
+        that.renderLabel = function (data) {
           var x = data.x || 0;
           var y = data.y || 0;
           that.originalElementX = x;
@@ -544,7 +544,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
 
           label.detach();
 
-          setTimeout(function() {
+          setTimeout(function () {
             $("#enjoyhint_label").remove();
             label.appendTo(that.enjoyhint);
           }, that.options.animation_time / 2);
@@ -564,25 +564,25 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           };
         };
 
-        that.setMarkerColor = function(color){
+        that.setMarkerColor = function (color) {
 
-            function isValidColor(value) {
-                const temp = new Option().style;
-                temp.color = value;
-                return temp.color !== '';
-            }
+          function isValidColor(value) {
+            const temp = new Option().style;
+            temp.color = value;
+            return temp.color !== '';
+          }
 
-            if (isValidColor(color)){
-                return [$("#arrowhead"), $("#enjoyhint_arrow_line")].forEach(function(element){
-                    element.css("stroke", color);
-                });
-            }
+          if (isValidColor(color)) {
+            return [$("#arrowhead"), $("#enjoyhint_arrow_line")].forEach(function (element) {
+              element.css("stroke", color);
+            });
+          }
 
-            $("#arrowhead").css("stroke", "rgb(255,255,255)")
-            console.log("Error: invalid color name property - " + color);
+          $("#arrowhead").css("stroke", "rgb(255,255,255)")
+          console.log("Error: invalid color name property - " + color);
         }
 
-        that.renderArrow = function(data) {
+        that.renderArrow = function (data) {
           var x_from = data.x_from || 0;
           var y_from = data.y_from || 0;
           var x_to = data.x_to || 0;
@@ -596,10 +596,10 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           var xHalf = x_min + (x_max - x_min) / 2;
           var yHalf = y_min + (y_max - y_min) / 2;
           var yQtr = y_min + (y_max - y_min) / 4;
-          var makeQ = function(x1, y1, x2, y2) {
+          var makeQ = function (x1, y1, x2, y2) {
             return `Q ${x1} ${y1} ${x2} ${y2}`
           }
-          var makeQT = function(x1, y1, x2, y2, x3, y3) {
+          var makeQT = function (x1, y1, x2, y2, x3, y3) {
             return `Q ${x1} ${y1}, ${x2} ${y2} T ${x3} ${y3}`
           }
           var control_point1;
@@ -616,13 +616,13 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
 
           that.enjoyhint.addClass(that.cl.svg_transparent);
 
-          setTimeout(function() {
+          setTimeout(function () {
             $("#enjoyhint_arrow_line").remove();
             var path = [];
 
-            path.push("M",x_from, y_from,);
-            if(control_point1) path.push( control_point1)
-            if(control_point2) path.push( control_point2)
+            path.push("M", x_from, y_from,);
+            if (control_point1) path.push(control_point1)
+            if (control_point2) path.push(control_point2)
             var d = path.join(" ");
             console.log("arrow path: " + path)
 
@@ -635,17 +635,17 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
               })
             );
 
-            if(that.stepData.arrowColor) {
-                that.setMarkerColor(that.stepData.arrowColor)
+            if (that.stepData.arrowColor) {
+              that.setMarkerColor(that.stepData.arrowColor)
             } else {
-                $("#arrowhead").css("stroke", "rgb(255, 255, 255)");
+              $("#arrowhead").css("stroke", "rgb(255, 255, 255)");
             }
 
             that.enjoyhint.removeClass(that.cl.svg_transparent);
           }, that.options.animation_time / 2);
         };
 
-        that.getLabelElement = function(data) {
+        that.getLabelElement = function (data) {
           return $("<div>", {
             class: "enjoy_hint_label",
             id: "enjoyhint_label"
@@ -658,7 +658,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
             .appendTo(that.enjoyhint);
         };
 
-        that.disableEventsNearRect = function(rect, alsoDisableRect) {
+        that.disableEventsNearRect = function (rect, alsoDisableRect) {
           var top = rect.top;
           var left = rect.left;
           var right = rect.right;
@@ -666,19 +666,19 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
 
           //to disable events also within highlighted rectable, simply remove the gap
           if (alsoDisableRect === true) {
-              top = bottom;
-              right = left;
+            top = bottom;
+            right = left;
           }
 
           $top_dis_events
-          .css({
-            top: "0",
-            left: "0"
-          })
-          .height(top);
+            .css({
+              top: "0",
+              left: "0"
+            })
+            .height(top);
 
           $bottom_dis_events.css({
-              top: bottom + "px",
+            top: bottom + "px",
             left: "0"
           });
 
@@ -691,13 +691,13 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
 
           $right_dis_events.css({
             top: "0",
-              left: right + "px"
+            left: right + "px"
           });
         };
 
-        (function($) {
+        (function ($) {
           $.event.special.destroyed = {
-            remove: function(o) {
+            remove: function (o) {
               if (o.handler) {
                 o.handler();
               }
@@ -705,8 +705,8 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           };
         })($);
 
-        that.render = function(data, customBtnProps, callback) {
-          callback = callback || function(){};
+        that.render = function (data, customBtnProps, callback) {
+          callback = callback || function () { };
           that.stepData = data;
           that.customBtnProps = customBtnProps;
 
@@ -725,7 +725,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           );
 
           if (dialog != null) {
-            $(dialog).on("dialogClosing", function() {
+            $(dialog).on("dialogClosing", function () {
               that.stopFunction();
               callback();
               return;
@@ -841,31 +841,31 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           var label_ver_offset = half_h + label_shift;
 
           var areas_for_label = [
-            {name: 'right_center', common_area: right_offset * window.innerHeight, width: right_offset, height: window.innerHeight},
-            {name: 'right_top', common_area: right_offset * top_offset, width: right_offset, height: top_offset},
-            {name: 'right_bottom', common_area: right_offset * bottom_offset, width: right_offset, height: bottom_offset},
-            {name: 'left_center', common_area: left_offset * window.innerHeight, width: left_offset, height: window.innerHeight},
-            {name: 'left_top', common_area: left_offset * top_offset, width: left_offset, height: top_offset},
-            {name: 'left_bottom', common_area: left_offset * bottom_offset, width: left_offset, height: bottom_offset},
-            {name: 'center_top', common_area: window.innerWidth * top_offset, width: window.innerWidth, height: top_offset},
-            {name: 'center_bottom', common_area: window.innerWidth * bottom_offset, width: window.innerWidth, height: bottom_offset},
+            { name: 'right_center', common_area: right_offset * window.innerHeight, width: right_offset, height: window.innerHeight },
+            { name: 'right_top', common_area: right_offset * top_offset, width: right_offset, height: top_offset },
+            { name: 'right_bottom', common_area: right_offset * bottom_offset, width: right_offset, height: bottom_offset },
+            { name: 'left_center', common_area: left_offset * window.innerHeight, width: left_offset, height: window.innerHeight },
+            { name: 'left_top', common_area: left_offset * top_offset, width: left_offset, height: top_offset },
+            { name: 'left_bottom', common_area: left_offset * bottom_offset, width: left_offset, height: bottom_offset },
+            { name: 'center_top', common_area: window.innerWidth * top_offset, width: window.innerWidth, height: top_offset },
+            { name: 'center_bottom', common_area: window.innerWidth * bottom_offset, width: window.innerWidth, height: bottom_offset },
           ];
           var label_horizontal_space_required = label_width;
           var label_vertical_space_required = window.innerHeight <= 670 ? label_shift_with_label_height : label_shift_with_label_height + 20;
 
           var areas_priority = areas_for_label
-            .sort(function(area1, area2){return area1.common_area - area2.common_area})
+            .sort(function (area1, area2) { return area1.common_area - area2.common_area })
 
           var label_hor_side = 'oversized';
           for (var i = 0; i < areas_priority.length; i++) {
-              var name = areas_priority[i].name;
-              var area = areas_priority[i]
-              if (
-                area.width > label_horizontal_space_required
-                && area.height > label_vertical_space_required
-              ) {
-                  label_hor_side = name;
-              }
+            var name = areas_priority[i].name;
+            var area = areas_priority[i]
+            if (
+              area.width > label_horizontal_space_required
+              && area.height > label_vertical_space_required
+            ) {
+              label_hor_side = name;
+            }
           }
 
           var data_width_size = data.shape === "circle" ? data.radius * 2 :
@@ -874,72 +874,72 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           var data_height_size = data.shape === "circle" ? data.radius * 2 :
             data.height ? data.height : data.radius * 2;
 
-          var right_position = data.center_x + data_width_size/2 + 80;
-          var left_position = data.center_x - label_width - data_width_size/2 - 80;
+          var right_position = data.center_x + data_width_size / 2 + 80;
+          var left_position = data.center_x - label_width - data_width_size / 2 - 80;
           var central_position = window.innerWidth / 2 - label_width / 2;
           var top_position = data.center_y - label_ver_offset - label_height;
           var bottom_position = data.center_y + label_ver_offset;
-          var central_ver_position = window.innerHeight/2 - label_vertical_space_required/2 + 20;
-          
+          var central_ver_position = window.innerHeight / 2 - label_vertical_space_required / 2 + 20;
+
           var label_x, label_y, x_to, y_to, x_from, y_from;
-          
+
           var by_top_side = "hor"
 
-          switch(label_hor_side) {
+          switch (label_hor_side) {
             case "center_top":
-                label_y = top_position;
-                label_x = central_position;
-                x_to = data.center_x;
-                y_to = data.center_y - data_height_size/2 - 20;
-                break;
+              label_y = top_position;
+              label_x = central_position;
+              x_to = data.center_x;
+              y_to = data.center_y - data_height_size / 2 - 20;
+              break;
             case "center_bottom":
-                label_y = bottom_position;
-                label_x = central_position;
-                x_to = data.center_x;
-                y_to = data.center_y + data_height_size/2 + 20;
-                break;
+              label_y = bottom_position;
+              label_x = central_position;
+              x_to = data.center_x;
+              y_to = data.center_y + data_height_size / 2 + 20;
+              break;
             case 'left_center':
-                label_y = central_ver_position;
-                label_x = left_position;
-                x_to = data.center_x - data_width_size/2 - 20;
-                y_to = data.center_y;
-                by_top_side = "ver";  
-                break;
+              label_y = central_ver_position;
+              label_x = left_position;
+              x_to = data.center_x - data_width_size / 2 - 20;
+              y_to = data.center_y;
+              by_top_side = "ver";
+              break;
             case 'left_top':
-                label_y = top_position;
-                label_x = left_position;
-                x_to = data.center_x - data_width_size/2;
-                y_to = data.center_y - 20;
-                break;
+              label_y = top_position;
+              label_x = left_position;
+              x_to = data.center_x - data_width_size / 2;
+              y_to = data.center_y - 20;
+              break;
             case 'left_bottom':
-                label_y = bottom_position;
-                label_x = left_position;
-                x_to = data.center_x - data_width_size/2;
-                y_to = data.center_y + 20;
-                by_top_side = "ver";  
-                break;
+              label_y = bottom_position;
+              label_x = left_position;
+              x_to = data.center_x - data_width_size / 2;
+              y_to = data.center_y + 20;
+              by_top_side = "ver";
+              break;
             case 'right_center':
-                label_y = central_ver_position;
-                label_x = right_position;
-                x_to = data.center_x + data_width_size/2 + 20;
-                y_to = data.center_y;
-                by_top_side = "ver";  
-                break;
+              label_y = central_ver_position;
+              label_x = right_position;
+              x_to = data.center_x + data_width_size / 2 + 20;
+              y_to = data.center_y;
+              by_top_side = "ver";
+              break;
             case 'right_top':
-                label_y = top_position;
-                label_x = right_position;
-                x_to = data.center_x + data_width_size/2;
-                y_to = data.center_y - 20;
-                break;            
+              label_y = top_position;
+              label_x = right_position;
+              x_to = data.center_x + data_width_size / 2;
+              y_to = data.center_y - 20;
+              break;
             case 'right_bottom':
-                label_y = bottom_position;
-                label_x = right_position;
-                x_to = data.center_x + data_width_size/2;
-                y_to = data.center_y + 20;
-                by_top_side = "ver";  
-                break;
+              label_y = bottom_position;
+              label_x = right_position;
+              x_to = data.center_x + data_width_size / 2;
+              y_to = data.center_y + 20;
+              by_top_side = "ver";
+              break;
             case 'oversized':
-              setTimeout(function(){
+              setTimeout(function () {
                 $("#enjoyhint_arrow_line").remove();
                 $('.enjoy_hint_label').css({
                   'border-radius': '20px',
@@ -952,31 +952,31 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
                   'transition': 'background-color ease-out 0.5s'
                 })
               }, 450)
-                label_y = central_ver_position
-                label_x = central_position;
-                break;
+              label_y = central_ver_position
+              label_x = central_position;
+              break;
           }
 
-          x_from = label_x + label_width/2;
-          y_from = (data.center_y > label_y + label_height/2) ? label_y + label_height : label_y;
+          x_from = label_x + label_width / 2;
+          y_from = (data.center_y > label_y + label_height / 2) ? label_y + label_height : label_y;
           // if data center out of window y scale
-          if(data.center_y < 0) {
+          if (data.center_y < 0) {
             y_to = 20
           }
-          else if ( data.center_y > window.innerHeight + 20 ) {
+          else if (data.center_y > window.innerHeight + 20) {
             y_to = window.innerHeight - 20
           };
 
           // if element at the same position as hint
-          if(data.center_y >= label_y && data.center_y <= label_y + label_height) {
+          if (data.center_y >= label_y && data.center_y <= label_y + label_height) {
             x_from = data.center_x > label_x ? label_x + label_width : label_x;
             y_from = data.center_y;
           }
 
-          console.log("calling renderLabel", { x: label_x, y: label_y, text: data.text } )
+          console.log("calling renderLabel", { x: label_x, y: label_y, text: data.text })
           that.renderLabel({ x: label_x, y: label_y, text: data.text });
 
-          setTimeout(function(){
+          setTimeout(function () {
             console.log("calculating button positions after rendering label")
 
             const button_spacing = 10;
@@ -987,27 +987,27 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
             if (that.prevBtn === "show") {
               let ow = that.$prev_btn.outerWidth();
               let oh = that.$prev_btn.outerHeight();
-              allButtonsWidth +=  ow + button_spacing;
+              allButtonsWidth += ow + button_spacing;
               tallestButton = Math.max(tallestButton, oh);
             }
             if (that.nextBtn === "show") {
               let ow = that.$next_btn.outerWidth();
               let oh = that.$next_btn.outerHeight();
-              allButtonsWidth +=  ow + button_spacing;
+              allButtonsWidth += ow + button_spacing;
               tallestButton = Math.max(tallestButton, oh);
             }
             if (that.skipBtn === "show") {
               let ow = that.$skip_btn.outerWidth();
               let oh = that.$skip_btn.outerHeight();
-              allButtonsWidth +=  ow + button_spacing;
+              allButtonsWidth += ow + button_spacing;
               tallestButton = Math.max(tallestButton, oh);
             }
             let ow = that.$close_btn.outerWidth();
             let oh = that.$close_btn.outerHeight();
-            allButtonsWidth +=  ow + button_spacing;
+            allButtonsWidth += ow + button_spacing;
             tallestButton = Math.max(tallestButton, oh);
 
-            button_x = x_from - allButtonsWidth + (allButtonsWidth/2);//default to center pos
+            button_x = x_from - allButtonsWidth + (allButtonsWidth / 2);//default to center pos
             button_y = label_y - tallestButton - button_spacing;//default to buttons above label
 
             var arrow_is_above_label = function () {
@@ -1020,11 +1020,11 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
               return x_to >= x_from;
             };
 
-            if(arrow_is_above_label()) { //arrow renders above, put buttons below
+            if (arrow_is_above_label()) { //arrow renders above, put buttons below
               button_y = label_y + label_height + button_spacing;
             }
 
-            if(button_y < button_spacing) { //buttons too high, put them below
+            if (button_y < button_spacing) { //buttons too high, put them below
               button_y = label_y + label_height + button_spacing;
             }
 
@@ -1048,14 +1048,14 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
               that.$close_btn.html('&times;');
             }
             else {
-              that.$next_btn.html(customBtnProps.nextButton && customBtnProps.nextButton.text ? 
-                  customBtnProps.nextButton.text : 'Next');
-              that.$prev_btn.html(customBtnProps.prevButton && customBtnProps.prevButton.text ? 
-                  customBtnProps.prevButton.text : 'Previous');
-              that.$close_btn.html(customBtnProps.closeButton && customBtnProps.closeButton.text ? 
-                  customBtnProps.closeButton.text : 'Close');
+              that.$next_btn.html(customBtnProps.nextButton && customBtnProps.nextButton.text ?
+                customBtnProps.nextButton.text : 'Next');
+              that.$prev_btn.html(customBtnProps.prevButton && customBtnProps.prevButton.text ?
+                customBtnProps.prevButton.text : 'Previous');
+              that.$close_btn.html(customBtnProps.closeButton && customBtnProps.closeButton.text ?
+                customBtnProps.closeButton.text : 'Close');
             }
-            console.log("setting button positions to x/y", button_x, button_y )
+            console.log("setting button positions to x/y", button_x, button_y)
             var pos_x = button_x;
 
             if (that.prevBtn === "show") {
@@ -1096,13 +1096,13 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
             right: shape_data.right
           }, data.preventEvents);
 
-          console.log("calling renderArrow from / to",{
+          console.log("calling renderArrow from / to", {
             x_from: x_from,
             y_from: y_from,
             x_to: x_to,
             y_to: y_to,
             by_top_side: by_top_side,
-          } )
+          })
 
           that.renderArrow({
             x_from: x_from,
@@ -1113,7 +1113,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           });
         };
 
-        that.clear = function() {
+        that.clear = function () {
           that.ctx.clearRect(0, 0, 3000, 2000);
         };
 
@@ -1121,106 +1121,106 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
       });
     },
 
-    set: function(val) {
-      this.each(function() {
+    set: function (val) {
+      this.each(function () {
         this.enjoyhint_obj.setValue(val);
       });
       return this;
     },
 
-    show: function() {
-      this.each(function() {
+    show: function () {
+      this.each(function () {
         this.enjoyhint_obj.show();
       });
       return this;
     },
 
-    hide: function() {
-      this.each(function() {
+    hide: function () {
+      this.each(function () {
         this.enjoyhint_obj.hide();
       });
       return this;
     },
 
-    hide_prev: function() {
-      this.each(function() {
+    hide_prev: function () {
+      this.each(function () {
         this.enjoyhint_obj.hidePrevBtn();
       });
       return this;
     },
 
-    hide_next: function() {
-      this.each(function() {
+    hide_next: function () {
+      this.each(function () {
         this.enjoyhint_obj.hideNextBtn();
       });
       return this;
     },
 
-    hide_skip: function() {
-      this.each(function() {
+    hide_skip: function () {
+      this.each(function () {
         this.enjoyhint_obj.hideSkipBtn();
       });
       return this;
     },
 
-    show_prev: function() {
-      this.each(function() {
+    show_prev: function () {
+      this.each(function () {
         this.enjoyhint_obj.showPrevBtn();
       });
       return this;
     },
 
-    show_next: function() {
-      this.each(function() {
+    show_next: function () {
+      this.each(function () {
         this.enjoyhint_obj.showNextBtn();
       });
       return this;
     },
 
-    show_skip: function() {
-      this.each(function() {
+    show_skip: function () {
+      this.each(function () {
         this.enjoyhint_obj.showSkipBtn();
       });
       return this;
     },
 
-    hide_close: function() {
-      this.each(function() {
+    hide_close: function () {
+      this.each(function () {
         this.enjoyhint_obj.hideCloseBtn();
       });
       return this;
     },
 
-    show_close: function() {
-      this.each(function() {
+    show_close: function () {
+      this.each(function () {
         this.enjoyhint_obj.showCloseBtn();
       });
       return this;
     },
 
-    render_circle: function(x, y, r) {
-      this.each(function() {
+    render_circle: function (x, y, r) {
+      this.each(function () {
         this.enjoyhint_obj.renderCircle(x, y, r);
       });
       return this;
     },
 
-    render_label: function(x, y, r) {
-      this.each(function() {
+    render_label: function (x, y, r) {
+      this.each(function () {
         this.enjoyhint_obj.renderLabel(x, y, r);
       });
       return this;
     },
 
-    render: function(data, stopFunction, customBtnProps) {
-      this.each(function() {
+    render: function (data, stopFunction, customBtnProps) {
+      this.each(function () {
         that.stopFunction = stopFunction;
         this.enjoyhint_obj.render(data, customBtnProps);
       });
       return this;
     },
 
-    redo_events_near_rect: function(rect) {
+    redo_events_near_rect: function (rect) {
       that.disableEventsNearRect({
         top: rect.top,
         bottom: rect.bottom,
@@ -1229,16 +1229,16 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
       });
     },
 
-    clear: function() {
-      this.each(function() {
+    clear: function () {
+      this.each(function () {
         this.enjoyhint_obj.clear();
       });
 
       return this;
     },
 
-    close: function(val) {
-      this.each(function() {
+    close: function (val) {
+      this.each(function () {
         this.enjoyhint_obj.closePopdown();
       });
 
@@ -1246,7 +1246,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
     }
   };
 
-  $.fn.enjoyhint = function(method) {
+  $.fn.enjoyhint = function (method) {
     if (methods[method]) {
       return methods[method].apply(
         this,
