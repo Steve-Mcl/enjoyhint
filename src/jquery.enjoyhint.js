@@ -145,23 +145,23 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           makeSVG("marker", {
             id: "arrowMarker",
             viewBox: "0 0 36 21",
-            refX: "21",
+            refX: "7",
             refY: "10",
             markerUnits: "strokeWidth",
             orient: "auto",
-            markerWidth: "16",
-            markerHeight: "12"
+            markerWidth: "12",
+            markerHeight: "10"
           })
         );
-        var polilyne = $(
+        var arrowhead = $(
           makeSVG("path", {
             style: "fill:none; stroke:rgb(255,255,255); stroke-width:2",
-            d: "M0,0 c30,11 30,9 0,20",
-            id: "poliline"
+             d: "M 0 0 c 12 11 12 9 0 20",
+            id: "arrowhead"
           })
         );
 
-        defs.append(marker.append(polilyne)).appendTo(that.$svg);
+        defs.append(marker.append(arrowhead)).appendTo(that.$svg);
 
         that.kinetic_stage = new Kinetic.Stage({
           container: that.cl.kinetic_container,
@@ -286,7 +286,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           $('.enjoyhint_prev_btn').css('visibility', 'hidden');
           $('.enjoyhint_skip_btn').css('visibility', 'hidden');
           $('.enjoy_hint_label').remove()
-          $("#enjoyhint_arrpw_line").remove()
+          $("#enjoyhint_arrow_line").remove()
           if (!$(that.stepData.enjoyHintElementSelector).is(":visible")) {
             that.stopFunction();
             $(window).off("resize");
@@ -581,12 +581,12 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
             }
 
             if (isValidColor(color)){
-                return [$("#poliline"), $("#enjoyhint_arrpw_line")].forEach(function(element){
+                return [$("#arrowhead"), $("#enjoyhint_arrow_line")].forEach(function(element){
                     element.css("stroke", color);
                 });
             }
 
-            $("#poliline").css("stroke", "rgb(255,255,255)")
+            $("#arrowhead").css("stroke", "rgb(255,255,255)")
             console.log("Error: invalid color name property - " + color);
         }
 
@@ -595,50 +595,58 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
           var y_from = data.y_from || 0;
           var x_to = data.x_to || 0;
           var y_to = data.y_to || 0;
+          var x_min = Math.min(x_from, x_to);
+          var x_max = Math.max(x_from, x_to);
+          var y_min = Math.min(y_from, y_to);
+          var y_max = Math.max(y_from, y_to);
           var by_top_side = data.by_top_side;
-          var control_point_x = 0;
-          var control_point_y = 0;
-  
+
+          var xHalf = x_min + (x_max - x_min) / 2;
+          var yHalf = y_min + (y_max - y_min) / 2;
+          var yQtr = y_min + (y_max - y_min) / 4;
+          var makeQ = function(x1, y1, x2, y2) {
+            return `Q ${x1} ${y1} ${x2} ${y2}`
+          }
+          var makeQT = function(x1, y1, x2, y2, x3, y3) {
+            return `Q ${x1} ${y1}, ${x2} ${y2} T ${x3} ${y3}`
+          }
+          var control_point1;
+          var control_point2;
+
           if (by_top_side === 'hor') {
-            control_point_x = x_to
-            control_point_y = y_from
+            control_point1 = makeQT(x_from, yQtr, xHalf, yHalf, x_to, y_to);
+
           }
           else {
-            control_point_x = x_from
-            control_point_y = y_to
+            control_point1 = makeQ(x_from, y_to, x_to, y_to);
+
           }
 
           that.enjoyhint.addClass(that.cl.svg_transparent);
 
           setTimeout(function() {
-            $("#enjoyhint_arrpw_line").remove();
-            
-            var d =
-              "M" +
-              x_from +
-              "," +
-              y_from +
-              " Q" +
-              control_point_x +
-              "," +
-              control_point_y +
-              " " +
-              x_to +
-              "," +
-              y_to;
+            $("#enjoyhint_arrow_line").remove();
+            var path = [];
+
+            path.push("M",x_from, y_from,);
+            if(control_point1) path.push( control_point1)
+            if(control_point2) path.push( control_point2)
+            var d = path.join(" ");
+            console.log("arrow path: " + path)
+
             that.$svg.append(
               makeSVG("path", {
                 style: "fill:none; stroke:rgb(255,255,255); stroke-width:3",
                 "marker-end": "url(#arrowMarker)",
                 d: d,
-                id: "enjoyhint_arrpw_line"
+                id: "enjoyhint_arrow_line"
               })
             );
 
             if(that.stepData.arrowColor) {
                 that.setMarkerColor(that.stepData.arrowColor)
             } else {
-                $("#poliline").css("stroke", "rgb(255, 255, 255)");
+                $("#arrowhead").css("stroke", "rgb(255, 255, 255)");
             }
 
             that.enjoyhint.removeClass(that.cl.svg_transparent);
@@ -938,7 +946,7 @@ CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
                 break;
             case 'oversized':
               setTimeout(function(){
-                $("#enjoyhint_arrpw_line").remove();
+                $("#enjoyhint_arrow_line").remove();
                 $('.enjoy_hint_label').css({
                   'border-radius': '20px',
                   '-webkit-border-radius': '20px',

@@ -96,7 +96,7 @@
     function hideCurrentHint() {
       $body.enjoyhint("render_circle", []);
       $("#enjoyhint_label").remove();
-      $("#enjoyhint_arrpw_line").remove();
+      $("#enjoyhint_arrow_line").remove();
       $body.enjoyhint("hide_prev");
       $body.enjoyhint("hide_next");
       $body.enjoyhint("hide_skip");
