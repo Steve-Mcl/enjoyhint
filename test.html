@@ -127,7 +127,7 @@ body {
 </head>
 <body>
 <button id="but1" class=" red-ui-header-logo  red-ui-tab-button red-ui-tabs-add" onclick="doTour()">tour</button>
-<button id="but2" class=" red-ui-deploy-button-group button-group" style="float: right;" onclick="doTour()">Deploy</button>
+<button id="but2" class=" red-ui-deploy-button-group button-group" style="float: right;" onclick="alert('Deploying!')">Deploy</button>
 <div class="header">
   <h1>My Website</h1>
   <p>A <b>responsive</b> website created by me.</p>
@@ -179,7 +179,7 @@ body {
         //setup steps
         var enjoyhint_script_steps = [
             {
-                'next .red-ui-header-logo': 'Welcome to Node-RED.<br>The following tour is very short but has some important tips that will help you get started. <br>Click Next to continue or click the close button to exit.',
+                'next .red-ui-header-logo': 'Welcome to xxxAPPxxx.<br>The following tour is very short but has some important tips that will help you get started. <br>Click Next to continue or click the close button to exit.',
                 showPrev : false,
                 showNext : true,
                 showSkip : false,
@@ -191,7 +191,13 @@ body {
                 showSkip : false,
             },
             {
-                'next #red-ui-workspace-chart' : 'This area is called the editor workspace. This is where your flows are drawn',
+                'next .footer':'This area is called the footer. That is all!',
+                showPrev : true,
+                showNext : true,
+                showSkip : false,
+            },
+            {
+                'next #red-ui-workspace-chart' : 'This area is called the editor workspace. This is where your work is done',
                 showNext : true,
                 showPrev : true,
                 showSkip : false,
@@ -211,9 +217,10 @@ body {
             {
                 'click .red-ui-deploy-button-group.button-group' : 'The "deploy" button will send the flows to the runtime and activate it. NOTE: there are three modes of deploy, click the dropdown to see them',
                 showPrev : true,
-                showNext : false,
-                showSkip : true,
-                "skipButton" : {text: "Done"},
+                showNext : true,
+                showSkip : false,
+                preventEvents: true,
+                "nextButton" : {text: "Done"},
             },  
         ];
 
