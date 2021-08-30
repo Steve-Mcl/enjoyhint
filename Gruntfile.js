@@ -10,6 +10,20 @@ module.exports = function(grunt){
                 dest: 'dist/<%= pkg.name %>.js'
             }
         },
+        copy: {
+            font: {
+                files:[
+                    {
+                        cwd: 'src',
+                        src: [
+                            'Androgyne.ttf.*',
+                        ],
+                        expand: true,
+                        dest: 'dist/'
+                    },
+                ]
+            }
+        },
         uglify: {
             main: {
                 files: {
@@ -28,20 +42,25 @@ module.exports = function(grunt){
                 }
             }
         },
-        cssmin: {
-            combine: {
+        'dart-sass': {
+            target: {
+                options: {
+                    outputStyle: 'compressed'
+                },
                 files: {
-                    'dist/enjoyhint.css': ['src/jquery.enjoyhint.css']
+                    'dist/enjoyhint.css': 'src/jquery.enjoyhint.scss'
                 }
             }
-        }
+        },
     });
 
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-dart-sass');
 
-    grunt.registerTask("default", ["concat", "uglify", "cssmin"])
+    grunt.registerTask("default", ["concat", "copy:font", "uglify", "dart-sass"]);
 
 };
