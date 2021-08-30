@@ -15,23 +15,28 @@
 })(function ($) {
   var EnjoyHint = function (configs) {
     var $event_element;
-    var that = this;
-    var _options = configs || {};
-    var BTN_NEXT_TEXT = _options.btnNextText;
-    var BTN_SKIP_TEXT = _options.btnSkipText;
-
-    var SHAPE_BACKGROUND_COLOR = _options.backgroundColor || "rgba(0,0,0,0.6)";
+    const that = this;
+    const _options = configs || {};
+    const BTN_PREV_TEXT = _options.btnPrevText || "Previous";
+    const BTN_NEXT_TEXT = _options.btnNextText || "Next";
+    const BTN_SKIP_TEXT = _options.btnSkipText || "Skip";
+    const BTN_CLOSE_TEXT = _options.btnCloseText || "Close";
+    const SHAPE_BACKGROUND_COLOR = _options.backgroundColor || "rgba(0,0,0,0.6)";
 
     var body = "body"; // TODO: Is it possible case when we need to define enjoyhint somewhere else?
 
+    var elementAvailableEventName = "enjoyhint-element-available";
+  
     var defaults = {
-      onStart: function () { },
+      onStart: function() {},
+  
+      onEnd: function() {},
+  
+      onSkip: function() {},
 
-      onEnd: function () { },
+      onNext: function () { },
 
-      onSkip: function () { },
-
-      onNext: function () { }
+      elementToScroll: document.body
     };
 
     var options = $.extend(defaults, _options);
@@ -39,14 +44,14 @@
     var current_step = 0;
 
     var $body = $(body);
-
+    var originalOverflow;
     /********************* PRIVATE METHODS ***************************************/
 
     var init = function () {
       if ($(".enjoyhint")) {
         $(".enjoyhint").remove();
       }
-
+      originalOverflow = $body.css("overflow");
       $body.css({ overflow: "hidden" });
 
       $(document).on("touchmove", lockTouch);
@@ -62,7 +67,8 @@
           options.onSkip();
           skipAll();
         },
-        fill: SHAPE_BACKGROUND_COLOR
+        fill: SHAPE_BACKGROUND_COLOR,
+        elementToScroll: options.elementToScroll
       });
     };
 
@@ -72,7 +78,7 @@
 
     var destroyEnjoy = function () {
       $(".enjoyhint").remove();
-      $body.css({ overflow: "auto" });
+      $body.css({ overflow: originalOverflow });
       $(document).off("touchmove", lockTouch);
     };
 
@@ -80,24 +86,28 @@
       var $nextBtn = $(".enjoyhint_next_btn");
       var $skipBtn = $(".enjoyhint_skip_btn");
       var $prevBtn = $(".enjoyhint_prev_btn");
+      var $closeBtn = $(".enjoyhint_close_btn");
 
       $prevBtn.removeClass(that.prevUserClass);
       $nextBtn.removeClass(that.nextUserClass);
-      $nextBtn.text(BTN_NEXT_TEXT);
       $skipBtn.removeClass(that.skipUserClass);
+      $prevBtn.text(BTN_PREV_TEXT);
+      $nextBtn.text(BTN_NEXT_TEXT);
       $skipBtn.text(BTN_SKIP_TEXT);
+      $closeBtn.text(BTN_CLOSE_TEXT);
     };
 
     function hideCurrentHint() {
       $body.enjoyhint("render_circle", []);
       $("#enjoyhint_label").remove();
-      $("#enjoyhint_arrpw_line").remove();
+      $("#enjoyhint_arrow_line").remove();
       $body.enjoyhint("hide_prev");
       $body.enjoyhint("hide_next");
       $body.enjoyhint("hide_skip");
+      $body.enjoyhint("hide_close");
     };
 
-    var stepAction = function () {
+    var stepAction = function(unpause) {
       if (!(data && data[current_step])) {
         $body.enjoyhint("hide");
         options.onEnd();
@@ -107,21 +117,67 @@
 
       options.onNext();
 
-      var $enjoyhint = $(".enjoyhint");
-
-      $enjoyhint.removeClass("enjoyhint-step-" + current_step);
-      $enjoyhint.removeClass("enjoyhint-step-" + (current_step + 1));
-      $enjoyhint.removeClass("enjoyhint-step-" + (current_step + 2));
-      $enjoyhint.addClass("enjoyhint-step-" + (current_step + 1));
-
       var step_data = data[current_step];
+
+      $body.off(elementAvailableEventName);
+
+
+
+      //loops waiting until specified element becomes visible
+      var waitUntilAvailable = function (selector, interval) {
+        if (interval == null)
+          interval = 150; 
+        
+        var triggerIfAvailable = function () {
+             if ($(selector).is(":visible")) {
+                 $body.trigger(elementAvailableEventName);
+             }
+             else {
+                 setTimeout(triggerIfAvailable, interval)
+             }
+         };
+ 
+         setTimeout(triggerIfAvailable, 0);
+      }
+ 
+      //if pausedUntil was specified, hide current overlay and wait until specified event occurs
+      if (!unpause && step_data.pausedUntil != null && step_data.pausedUntil.event != null) {
+            //hide current overlay during waiting time
+            $body.enjoyhint("hide");
+            
+           //if 'available' event was chosen wait for the custom event, which is triggered when the element becomes visible
+            if (step_data.pausedUntil.event === 'available') {
+                $body.on(elementAvailableEventName, function () {
+                    stepAction(true);      //restart the step without pause
+                    $body.off(elementAvailableEventName);
+                });
+
+                //check if element is available every 150ms
+                waitUntilAvailable(step_data.pausedUntil.selector);
+            }
+            else {
+                //delay the actual action until 'the event' happens on body or selector
+                if (step_data.pausedUntil.selector == null) {
+                  on(step_data.pausedUntil.event, function () {
+                      stepAction(true);     //restart the step without pause
+                      off(step_data.pausedUntil.event);
+                  });
+                }
+                else {
+                  $(step_data.pausedUntil.selector).on(step_data.pausedUntil.event, function () {
+                      stepAction(true);     //restart the step without pause
+                      $(step_data.pausedUntil.selector).off(step_data.pausedUntil.event)
+                  });
+                }
+            }
+
+            //the rest of the logic will be executed whenever the step is restarted
+            return;
+      }
 
       var scrollSpeed = step_data.scrollAnimationSpeed;
 
-      if (
-        step_data.onBeforeStart &&
-        typeof step_data.onBeforeStart === "function"
-      ) {
+      if (step_data.onBeforeStart && typeof step_data.onBeforeStart === "function") {
         step_data.onBeforeStart();
       }
 
@@ -152,9 +208,9 @@
         }, 250);
 
         var isHintInViewport = $(step_data.selector).get(0).getBoundingClientRect();
-        if (isHintInViewport.top < 0 || isHintInViewport.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
-          hideCurrentHint();
-          $(document.body).scrollTo(step_data.selector, step_data.scrollAnimationSpeed || 250, { offset: -200 });
+        if(isHintInViewport.top < 0 || isHintInViewport.bottom > (window.innerHeight || document.documentElement.clientHeight)){
+            hideCurrentHint();
+            $(options.elementToScroll).scrollTo(step_data.selector, step_data.scrollAnimationSpeed || 250, {offset: -200});
         }
         else {
           // if previous button has been clicked and element are in viewport to prevent custom step scrollAnimationSpeed set scrollSpeed to default
@@ -182,8 +238,9 @@
               }
             });
           }
+
           $body.enjoyhint("show_next");
-          if (step_data.showNext === false || current_step >= (data.length - 1)) {
+          if (step_data.showNext === false) {
             $body.enjoyhint("hide_next");
           }
 
@@ -201,13 +258,14 @@
           } else {
             $body.enjoyhint("show_skip");
           }
+          $body.enjoyhint("show_close");
 
 
           if (step_data.nextButton) {
             var $nextBtn = $(".enjoyhint_next_btn");
 
             $nextBtn.addClass(step_data.nextButton.className || "");
-            $nextBtn.text(step_data.nextButton.text || "Next");
+            $nextBtn.text(step_data.nextButton.text || BTN_NEXT_TEXT);
             that.nextUserClass = step_data.nextButton.className;
           }
 
@@ -215,7 +273,7 @@
             var $prevBtn = $(".enjoyhint_prev_btn");
 
             $prevBtn.addClass(step_data.prevButton.className || "");
-            $prevBtn.text(step_data.prevButton.text || "Previous");
+            $prevBtn.text(step_data.prevButton.text || BTN_PREV_TEXT);
             that.prevUserClass = step_data.prevButton.className;
           }
 
@@ -223,7 +281,7 @@
             var $skipBtn = $(".enjoyhint_skip_btn");
 
             $skipBtn.addClass(step_data.skipButton.className || "");
-            $skipBtn.text(step_data.skipButton.text || "Skip");
+            $skipBtn.text(step_data.skipButton.text || BTN_SKIP_TEXT);
             that.skipUserClass = step_data.skipButton.className;
           }
 
@@ -254,13 +312,20 @@
                 break;
             }
           } else {
-            $event_element.on(event, function (e) {
-              if (step_data.keyCode && e.keyCode != step_data.keyCode) {
-                return;
-              }
+              var alreadyTriggered = false;
+              $event_element.one(event, function (e) {    //one should ensure that event is handled only once, but that's not always enough
+                  if (alreadyTriggered)                   //make sure that the step is not changed twice handling the same event
+                      return;
 
-              current_step++;
-              stepAction(); // clicked
+                  alreadyTriggered = true;                
+                  if (step_data.keyCode && e.keyCode != step_data.keyCode) {
+                    return;
+                  }
+
+                  $event_element.off(event);              //unregister the event
+                  
+                  current_step++;
+                  stepAction();                           //move to the next step
             });
           }
 
@@ -291,7 +356,8 @@
             left: step_data.left,
             right: step_data.right,
             margin: step_data.margin,
-            scroll: step_data.scroll
+            scroll: step_data.scroll,
+            preventEvents: step_data.preventEvents
           };
 
           var customBtnProps = {
@@ -314,7 +380,7 @@
             shape_data.height = h + shape_margin;
           }
 
-          $body.enjoyhint("render_label_with_shape", shape_data, that.stop, customBtnProps);
+          $body.enjoyhint("render", shape_data, that.stop, customBtnProps);
 
         }, scrollSpeed + 20 || 270);
       }, timeout);
@@ -402,6 +468,7 @@
 
         case "skip":
           skipAll();
+          options.onSkip();
           break;
 
         default: $body.trigger(makeEventName(event_name, true));
@@ -440,8 +507,6 @@
   };
   return EnjoyHint;
 })
-
-
 ;CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
   if (w < 2 * r) r = w / 2;
   if (h < 2 * r) r = h / 2;
@@ -469,13 +534,8 @@
 	}
 })(function($, Kinetic) {
   var that;
-  var originalLabelLeft, originalLabelTop;
-  var originalArrowLeft, originalArrowTop;
-  var originalCenterX, originalCenterY;
-  var originalSkipbuttonLeft, originalSkipbuttonTop;
-  var prevWindowWidth, prevWindowHeight;
-  var originalWidth = window.innerWidth,
-    originalHeight = window.innerHeight;
+  var originalWidth = window.innerWidth;
+  var originalHeight = window.innerHeight;
 
   var methods = {
     init: function(options) {
@@ -492,16 +552,6 @@
         that = this.enjoyhint_obj;
 
         that.resetComponentStuff = function() {
-          originalLabelLeft = null;
-          originalLabelTop = null;
-          originalArrowLeft = null;
-          originalArrowTop = null;
-          originalCenterX = null;
-          originalCenterY = null;
-          originalSkipbuttonLeft = null;
-          originalSkipbuttonTop = null;
-          prevWindowWidth = null;
-          prevWindowHeight = null;
           originalWidth = window.innerWidth;
           originalHeight = window.innerHeight;
         };
@@ -589,23 +639,23 @@
           makeSVG("marker", {
             id: "arrowMarker",
             viewBox: "0 0 36 21",
-            refX: "21",
+            refX: "7",
             refY: "10",
             markerUnits: "strokeWidth",
             orient: "auto",
-            markerWidth: "16",
-            markerHeight: "12"
+            markerWidth: "12",
+            markerHeight: "10"
           })
         );
-        var polilyne = $(
+        var arrowhead = $(
           makeSVG("path", {
             style: "fill:none; stroke:rgb(255,255,255); stroke-width:2",
-            d: "M0,0 c30,11 30,9 0,20",
-            id: "poliline"
+             d: "M 0 0 c 12 11 12 9 0 20",
+            id: "arrowhead"
           })
         );
 
-        defs.append(marker.append(polilyne)).appendTo(that.$svg);
+        defs.append(marker.append(arrowhead)).appendTo(that.$svg);
 
         that.kinetic_stage = new Kinetic.Stage({
           container: that.cl.kinetic_container,
@@ -660,7 +710,7 @@
 
         that.$close_btn = $("<div>", { class: that.cl.close_btn })
           .appendTo(that.enjoyhint)
-          .html("")
+          .html("Close")
           .click(function(e) {
             that.hide();
             that.options.onSkipClick();
@@ -729,8 +779,9 @@
           $('.enjoyhint_next_btn').css('visibility', 'hidden');
           $('.enjoyhint_prev_btn').css('visibility', 'hidden');
           $('.enjoyhint_skip_btn').css('visibility', 'hidden');
+          $('.enjoyhint_close_btn').css('visibility', 'hidden');
           $('.enjoy_hint_label').remove()
-          $("#enjoyhint_arrpw_line").remove()
+          $("#enjoyhint_arrow_line").remove()
           if (!$(that.stepData.enjoyHintElementSelector).is(":visible")) {
             that.stopFunction();
             $(window).off("resize");
@@ -758,15 +809,18 @@
             that.stepData.width = newDataCoords.width + 11;
             that.stepData.height = newDataCoords.height + 11;
 
-            that.renderLabelWithShape(that.stepData, that.customBtnProps);
-            $('.enjoyhint_next_btn').css('visibility', 'visible');
-            $('.enjoyhint_prev_btn').css('visibility', 'visible');
-            $('.enjoyhint_skip_btn').css('visibility', 'visible');
+            that.render(that.stepData, that.customBtnProps, function() {
+              console.log("resize done - showing buttons")
+              $('.enjoyhint_next_btn').css('visibility', 'visible');
+              $('.enjoyhint_prev_btn').css('visibility', 'visible');
+              $('.enjoyhint_skip_btn').css('visibility', 'visible');
+              $('.enjoyhint_close_btn').css('visibility', 'visible');
+            });
           }
 
           doit = setTimeout(function() {
             if(boundingClientRect.top < 0 || boundingClientRect.bottom > (window.innerHeight || document.documentElement.clientHeight)){
-              $(document.body).scrollTo(that.stepData.enjoyHintElementSelector, 150, {offset: -200, onAfter:renderAfterResize});
+              $(that.options.elementToScroll).scrollTo(that.stepData.enjoyHintElementSelector, 150, {offset: -200, onAfter:renderAfterResize});
             }
             else renderAfterResize();
           }, 150);
@@ -792,14 +846,6 @@
           that.kinetic_stage.draw();
         });
 
-        var enjoyhint_elements = [
-          that.enjoyhint,
-          $top_dis_events,
-          $bottom_dis_events,
-          $left_dis_events,
-          $right_dis_events
-        ];
-
         that.show = function() {
           that.enjoyhint.removeClass(that.cl.hide);
         };
@@ -819,32 +865,44 @@
 
         that.hide();
 
-        that.hideNextBtn = function() {
-          that.$next_btn.addClass(that.cl.hide);
-          that.nextBtn = "hide";
-        };
-
         that.hidePrevBtn = function() {
+          console.log("hidePrevBtn")
           that.$prev_btn.addClass(that.cl.hide);
           that.prevBtn = "hide";
         };
-
         that.showPrevBtn = function() {
+          console.log("showPrevBtn")
           that.$prev_btn.removeClass(that.cl.hide);
           that.prevBtn = "show";
         };
-
+        
+        that.hideNextBtn = function() {
+          console.log("hideNextBtn")
+          that.$next_btn.addClass(that.cl.hide);
+          that.nextBtn = "hide";
+        };
         that.showNextBtn = function() {
+          console.log("showNextBtn")
           that.$next_btn.removeClass(that.cl.hide);
           that.nextBtn = "show";
         };
 
         that.hideSkipBtn = function() {
           that.$skip_btn.addClass(that.cl.hide);
-        };
-
+          that.skipBtn = "hide";
+        }; 
         that.showSkipBtn = function() {
           that.$skip_btn.removeClass(that.cl.hide);
+          that.skipBtn = "show";
+        };
+
+        that.hideCloseBtn = function() {
+          that.$close_btn.addClass(that.cl.hide);
+          that.closeBtn = "hide";
+        };
+        that.showCloseBtn = function() {
+          that.$close_btn.removeClass(that.cl.hide);
+          that.closeBtn = "show";
         };
 
         that.renderCircle = function(data) {
@@ -955,9 +1013,8 @@
 
         that.renderLabel = function(data) {
           var x = data.x || 0;
-          that.originalElementX = x;
           var y = data.y || 0;
-          var text = data.text || 0;
+          that.originalElementX = x;
 
           var label = that.getLabelElement({
             x: x,
@@ -1025,12 +1082,12 @@
             }
 
             if (isValidColor(color)){
-                return [$("#poliline"), $("#enjoyhint_arrpw_line")].forEach(function(element){
+                return [$("#arrowhead"), $("#enjoyhint_arrow_line")].forEach(function(element){
                     element.css("stroke", color);
                 });
             }
 
-            $("#poliline").css("stroke", "rgb(255,255,255)")
+            $("#arrowhead").css("stroke", "rgb(255,255,255)")
             console.log("Error: invalid color name property - " + color);
         }
 
@@ -1039,50 +1096,58 @@
           var y_from = data.y_from || 0;
           var x_to = data.x_to || 0;
           var y_to = data.y_to || 0;
+          var x_min = Math.min(x_from, x_to);
+          var x_max = Math.max(x_from, x_to);
+          var y_min = Math.min(y_from, y_to);
+          var y_max = Math.max(y_from, y_to);
           var by_top_side = data.by_top_side;
-          var control_point_x = 0;
-          var control_point_y = 0;
-  
+
+          var xHalf = x_min + (x_max - x_min) / 2;
+          var yHalf = y_min + (y_max - y_min) / 2;
+          var yQtr = y_min + (y_max - y_min) / 4;
+          var makeQ = function(x1, y1, x2, y2) {
+            return `Q ${x1} ${y1} ${x2} ${y2}`
+          }
+          var makeQT = function(x1, y1, x2, y2, x3, y3) {
+            return `Q ${x1} ${y1}, ${x2} ${y2} T ${x3} ${y3}`
+          }
+          var control_point1;
+          var control_point2;
+
           if (by_top_side === 'hor') {
-            control_point_x = x_to
-            control_point_y = y_from
+            control_point1 = makeQT(x_from, yQtr, xHalf, yHalf, x_to, y_to);
+
           }
           else {
-            control_point_x = x_from
-            control_point_y = y_to
+            control_point1 = makeQ(x_from, y_to, x_to, y_to);
+
           }
 
           that.enjoyhint.addClass(that.cl.svg_transparent);
 
           setTimeout(function() {
-            $("#enjoyhint_arrpw_line").remove();
-            
-            var d =
-              "M" +
-              x_from +
-              "," +
-              y_from +
-              " Q" +
-              control_point_x +
-              "," +
-              control_point_y +
-              " " +
-              x_to +
-              "," +
-              y_to;
+            $("#enjoyhint_arrow_line").remove();
+            var path = [];
+
+            path.push("M",x_from, y_from,);
+            if(control_point1) path.push( control_point1)
+            if(control_point2) path.push( control_point2)
+            var d = path.join(" ");
+            console.log("arrow path: " + path)
+
             that.$svg.append(
               makeSVG("path", {
                 style: "fill:none; stroke:rgb(255,255,255); stroke-width:3",
                 "marker-end": "url(#arrowMarker)",
                 d: d,
-                id: "enjoyhint_arrpw_line"
+                id: "enjoyhint_arrow_line"
               })
             );
 
             if(that.stepData.arrowColor) {
                 that.setMarkerColor(that.stepData.arrowColor)
             } else {
-                $("#poliline").css("stroke", "rgb(255, 255, 255)");
+                $("#arrowhead").css("stroke", "rgb(255, 255, 255)");
             }
 
             that.enjoyhint.removeClass(that.cl.svg_transparent);
@@ -1102,16 +1167,27 @@
             .appendTo(that.enjoyhint);
         };
 
-        that.disableEventsNearRect = function(rect) {
+        that.disableEventsNearRect = function(rect, alsoDisableRect) {
+          var top = rect.top;
+          var left = rect.left;
+          var right = rect.right;
+          var bottom = rect.bottom;
+
+          //to disable events also within highlighted rectable, simply remove the gap
+          if (alsoDisableRect === true) {
+              top = bottom;
+              right = left;
+          }
+
           $top_dis_events
-            .css({
-              top: "0",
-              left: "0"
-            })
-            .height(rect.top);
+          .css({
+            top: "0",
+            left: "0"
+          })
+          .height(top);
 
           $bottom_dis_events.css({
-            top: rect.bottom + "px",
+              top: bottom + "px",
             left: "0"
           });
 
@@ -1120,11 +1196,11 @@
               top: "0",
               left: 0 + "px"
             })
-            .width(rect.left);
+            .width(left);
 
           $right_dis_events.css({
             top: "0",
-            left: rect.right + "px"
+              left: right + "px"
           });
         };
 
@@ -1138,7 +1214,8 @@
           };
         })($);
 
-        that.renderLabelWithShape = function(data, customBtnProps) {
+        that.render = function(data, customBtnProps, callback) {
+          callback = callback || function(){};
           that.stepData = data;
           that.customBtnProps = customBtnProps;
 
@@ -1159,6 +1236,7 @@
           if (dialog != null) {
             $(dialog).on("dialogClosing", function() {
               that.stopFunction();
+              callback();
               return;
             });
           }
@@ -1371,12 +1449,12 @@
                 break;
             case 'oversized':
               setTimeout(function(){
-                $("#enjoyhint_arrpw_line").remove();
+                $("#enjoyhint_arrow_line").remove();
                 $('.enjoy_hint_label').css({
                   'border-radius': '20px',
                   '-webkit-border-radius': '20px',
                   '-moz-border-radius': '20px',
-                  'background-color': '#272A26',
+                  'background-color': '#272A26DD',
                   '-webkit-transition': 'background-color ease-out 0.5s',
                   '-moz-transition': 'background-color ease-out 0.5s',
                   '-o-transition': 'background-color ease-out 0.5s',
@@ -1404,83 +1482,136 @@
             y_from = data.center_y;
           }
 
-          that.renderLabel({
-            x: label_x,
-            y: label_y,
-            text: data.text
-          });
+          console.log("calling renderLabel", { x: label_x, y: label_y, text: data.text } )
+          that.renderLabel({ x: label_x, y: label_y, text: data.text });
 
           setTimeout(function(){
-            var summoryButtonWidth = that.$next_btn.width() + that.$skip_btn.width() + that.$prev_btn.width() + 30;
-            var distance = label_x - 100;
-            var ver_button_position = label_y + label_height + 40
-            
-            if (summoryButtonWidth + label_x > x_to) {
-            distance = x_to >= x_from ? x_to + 20 : label_x + label_width/2
+            console.log("calculating button positions after rendering label")
+
+            const button_spacing = 10;
+            let allButtonsWidth = 0;
+            let tallestButton = 0;
+            let button_x = button_spacing;
+            let button_y = button_spacing;
+            if (that.prevBtn === "show") {
+              let ow = that.$prev_btn.outerWidth();
+              let oh = that.$prev_btn.outerHeight();
+              allButtonsWidth +=  ow + button_spacing;
+              tallestButton = Math.max(tallestButton, oh);
             }
-              
-            if (summoryButtonWidth + distance > window.innerWidth || distance < 0) {
-              distance = 10;
-              ver_button_position = y_from < y_to ? label_y - 80 : label_y + label_height + 40
+            if (that.nextBtn === "show") {
+              let ow = that.$next_btn.outerWidth();
+              let oh = that.$next_btn.outerHeight();
+              allButtonsWidth +=  ow + button_spacing;
+              tallestButton = Math.max(tallestButton, oh);
+            }
+            if (that.skipBtn === "show") {
+              let ow = that.$skip_btn.outerWidth();
+              let oh = that.$skip_btn.outerHeight();
+              allButtonsWidth +=  ow + button_spacing;
+              tallestButton = Math.max(tallestButton, oh);
+            }
+            let ow = that.$close_btn.outerWidth();
+            let oh = that.$close_btn.outerHeight();
+            allButtonsWidth +=  ow + button_spacing;
+            tallestButton = Math.max(tallestButton, oh);
+
+            button_x = x_from - allButtonsWidth + (allButtonsWidth/2);//default to center pos
+            button_y = label_y - tallestButton - button_spacing;//default to buttons above label
+
+            var arrow_is_above_label = function () {
+              return y_from <= label_y
+            };
+            var buttons_are_above_label = function () {
+              return button_y < label_y;
+            };
+            var arrow_points_right = function () {
+              return x_to >= x_from;
+            };
+
+            if(arrow_is_above_label()) { //arrow renders above, put buttons below
+              button_y = label_y + label_height + button_spacing;
             }
 
-            var initial_distance = distance;
-            var initial_ver_position = ver_button_position;
+            if(button_y < button_spacing) { //buttons too high, put them below
+              button_y = label_y + label_height + button_spacing;
+            }
+
+            //if arrow and buttons are on same plain, shift them to side of arrow
+            if (arrow_is_above_label() === buttons_are_above_label()) {
+              button_x = arrow_points_right() ? x_from - button_spacing - allButtonsWidth : label_x + button_spacing;
+            }
+
+            if (allButtonsWidth + button_x > window.innerWidth || button_x < 0) {
+              button_x = button_spacing;
+              button_y = arrow_points_right() ? label_y - (that.$skip_btn.outerHeight() - button_spacing) : label_y + label_height + button_spacing;
+            }
+
+            if (button_x < button_spacing) {
+              button_x = button_spacing;
+            }
 
             if (window.innerWidth <= 640) {
-              distance = 10;
-              ver_button_position = 10;
               that.$next_btn.html('&#8250;');
               that.$prev_btn.html('&#8249;');
+              that.$close_btn.html('&times;');
             }
             else {
-              distance = initial_distance;
-              ver_button_position = initial_ver_position;
               that.$next_btn.html(customBtnProps.nextButton && customBtnProps.nextButton.text ? 
                   customBtnProps.nextButton.text : 'Next');
               that.$prev_btn.html(customBtnProps.prevButton && customBtnProps.prevButton.text ? 
                   customBtnProps.prevButton.text : 'Previous');
+              that.$close_btn.html(customBtnProps.closeButton && customBtnProps.closeButton.text ? 
+                  customBtnProps.closeButton.text : 'Close');
+            }
+            console.log("setting button positions to x/y", button_x, button_y )
+            var pos_x = button_x;
+
+            if (that.prevBtn === "show") {
+              that.$prev_btn.css({
+                left: pos_x,
+                top: button_y
+              });
+              pos_x += that.$prev_btn.outerWidth() + button_spacing;
             }
 
-            that.$prev_btn.css({
-              left: distance,
-              top: ver_button_position
+            if (that.nextBtn === "show") {
+              that.$next_btn.css({
+                left: pos_x,
+                top: button_y
+              });
+              pos_x += that.$next_btn.outerWidth() + button_spacing;
+            }
+
+            if (that.skipBtn === "show") {
+              that.$skip_btn.css({
+                left: pos_x,
+                top: button_y
+              });
+              pos_x += that.$skip_btn.outerWidth() + button_spacing;
+            }
+
+            that.$close_btn.css({
+              left: pos_x,
+              top: button_y
             });
-
-            var left_next = distance + that.$prev_btn.width() + 10;
-            var left_skip = distance + that.$prev_btn.width() + that.$next_btn.width() + 20;
-
-            if (that.nextBtn === "hide") {
-              left_skip = distance + that.$prev_btn.width() + 10;
-            }
-
-            if(that.prevBtn === "hide") {
-              left_next = distance;
-              left_skip = distance + that.$next_btn.width() + 10;
-            }
-
-            that.$next_btn.css({
-              left: left_next,
-              top: ver_button_position
-            })
-
-            that.$skip_btn.css({
-              left: left_skip,
-              top: ver_button_position
-            });
-          }, 0)
-
-          that.$close_btn.css({
-            right: 10,
-            top: 10
-          });
+            callback();
+          }, that.options.animation_time / 2)
 
           that.disableEventsNearRect({
             top: shape_data.top,
             bottom: shape_data.bottom,
             left: shape_data.left,
             right: shape_data.right
-          });
+          }, data.preventEvents);
+
+          console.log("calling renderArrow from / to",{
+            x_from: x_from,
+            y_from: y_from,
+            x_to: x_to,
+            y_to: y_to,
+            by_top_side: by_top_side,
+          } )
 
           that.renderArrow({
             x_from: x_from,
@@ -1503,7 +1634,6 @@
       this.each(function() {
         this.enjoyhint_obj.setValue(val);
       });
-
       return this;
     },
 
@@ -1511,7 +1641,6 @@
       this.each(function() {
         this.enjoyhint_obj.show();
       });
-
       return this;
     },
 
@@ -1519,15 +1648,6 @@
       this.each(function() {
         this.enjoyhint_obj.hide();
       });
-
-      return this;
-    },
-
-    hide_next: function() {
-      this.each(function() {
-        this.enjoyhint_obj.hideNextBtn();
-      });
-
       return this;
     },
 
@@ -1535,23 +1655,13 @@
       this.each(function() {
         this.enjoyhint_obj.hidePrevBtn();
       });
-
       return this;
     },
 
-    show_prev: function() {
+    hide_next: function() {
       this.each(function() {
-        this.enjoyhint_obj.showPrevBtn();
+        this.enjoyhint_obj.hideNextBtn();
       });
-
-      return this;
-    },
-
-    show_next: function() {
-      this.each(function() {
-        this.enjoyhint_obj.showNextBtn();
-      });
-
       return this;
     },
 
@@ -1559,7 +1669,20 @@
       this.each(function() {
         this.enjoyhint_obj.hideSkipBtn();
       });
+      return this;
+    },
 
+    show_prev: function() {
+      this.each(function() {
+        this.enjoyhint_obj.showPrevBtn();
+      });
+      return this;
+    },
+
+    show_next: function() {
+      this.each(function() {
+        this.enjoyhint_obj.showNextBtn();
+      });
       return this;
     },
 
@@ -1567,7 +1690,20 @@
       this.each(function() {
         this.enjoyhint_obj.showSkipBtn();
       });
+      return this;
+    },
 
+    hide_close: function() {
+      this.each(function() {
+        this.enjoyhint_obj.hideCloseBtn();
+      });
+      return this;
+    },
+
+    show_close: function() {
+      this.each(function() {
+        this.enjoyhint_obj.showCloseBtn();
+      });
       return this;
     },
 
@@ -1575,7 +1711,6 @@
       this.each(function() {
         this.enjoyhint_obj.renderCircle(x, y, r);
       });
-
       return this;
     },
 
@@ -1583,16 +1718,14 @@
       this.each(function() {
         this.enjoyhint_obj.renderLabel(x, y, r);
       });
-
       return this;
     },
 
-    render_label_with_shape: function(data, stopFunction, customBtnProps) {
+    render: function(data, stopFunction, customBtnProps) {
       this.each(function() {
         that.stopFunction = stopFunction;
-        this.enjoyhint_obj.renderLabelWithShape(data, customBtnProps);
+        this.enjoyhint_obj.render(data, customBtnProps);
       });
-
       return this;
     },
 
@@ -1631,7 +1764,7 @@
     } else if (typeof method === "object" || !method) {
       return methods.init.apply(this, arguments);
     } else {
-      $.error("Method " + method + " does not exist on $.numinput");
+      $.error("Method " + method + " does not exist.");
     }
 
     return this;
