@@ -15,12 +15,13 @@
 })(function ($) {
   var EnjoyHint = function (configs) {
     var $event_element;
-    var that = this;
-    var _options = configs || {};
-    var BTN_NEXT_TEXT = _options.btnNextText;
-    var BTN_SKIP_TEXT = _options.btnSkipText;
-
-    var SHAPE_BACKGROUND_COLOR = _options.backgroundColor || "rgba(0,0,0,0.6)";
+    const that = this;
+    const _options = configs || {};
+    const BTN_PREV_TEXT = _options.btnPrevText || "Previous";
+    const BTN_NEXT_TEXT = _options.btnNextText || "Next";
+    const BTN_SKIP_TEXT = _options.btnSkipText || "Skip";
+    const BTN_CLOSE_TEXT = _options.btnCloseText || "Close";
+    const SHAPE_BACKGROUND_COLOR = _options.backgroundColor || "rgba(0,0,0,0.6)";
 
     var body = "body"; // TODO: Is it possible case when we need to define enjoyhint somewhere else?
 
@@ -43,14 +44,14 @@
     var current_step = 0;
 
     var $body = $(body);
-
+    var originalOverflow;
     /********************* PRIVATE METHODS ***************************************/
 
     var init = function () {
       if ($(".enjoyhint")) {
         $(".enjoyhint").remove();
       }
-
+      originalOverflow = $body.css("overflow");
       $body.css({ overflow: "hidden" });
 
       $(document).on("touchmove", lockTouch);
@@ -77,7 +78,7 @@
 
     var destroyEnjoy = function () {
       $(".enjoyhint").remove();
-      $body.css({ overflow: "auto" });
+      $body.css({ overflow: originalOverflow });
       $(document).off("touchmove", lockTouch);
     };
 
@@ -85,12 +86,15 @@
       var $nextBtn = $(".enjoyhint_next_btn");
       var $skipBtn = $(".enjoyhint_skip_btn");
       var $prevBtn = $(".enjoyhint_prev_btn");
+      var $closeBtn = $(".enjoyhint_close_btn");
 
       $prevBtn.removeClass(that.prevUserClass);
       $nextBtn.removeClass(that.nextUserClass);
-      $nextBtn.text(BTN_NEXT_TEXT);
       $skipBtn.removeClass(that.skipUserClass);
+      $prevBtn.text(BTN_PREV_TEXT);
+      $nextBtn.text(BTN_NEXT_TEXT);
       $skipBtn.text(BTN_SKIP_TEXT);
+      $closeBtn.text(BTN_CLOSE_TEXT);
     };
 
     function hideCurrentHint() {
@@ -100,6 +104,7 @@
       $body.enjoyhint("hide_prev");
       $body.enjoyhint("hide_next");
       $body.enjoyhint("hide_skip");
+      $body.enjoyhint("hide_close");
     };
 
     var stepAction = function(unpause) {
@@ -112,16 +117,11 @@
 
       options.onNext();
 
-      var $enjoyhint = $(".enjoyhint");
-
-      $enjoyhint.removeClass("enjoyhint-step-" + current_step);
-      $enjoyhint.removeClass("enjoyhint-step-" + (current_step + 1));
-      $enjoyhint.removeClass("enjoyhint-step-" + (current_step + 2));
-      $enjoyhint.addClass("enjoyhint-step-" + (current_step + 1));
-
       var step_data = data[current_step];
 
       $body.off(elementAvailableEventName);
+
+
 
       //loops waiting until specified element becomes visible
       var waitUntilAvailable = function (selector, interval) {
@@ -177,10 +177,7 @@
 
       var scrollSpeed = step_data.scrollAnimationSpeed;
 
-      if (
-        step_data.onBeforeStart &&
-        typeof step_data.onBeforeStart === "function"
-      ) {
+      if (step_data.onBeforeStart && typeof step_data.onBeforeStart === "function") {
         step_data.onBeforeStart();
       }
 
@@ -241,8 +238,9 @@
               }
             });
           }
+
           $body.enjoyhint("show_next");
-          if (step_data.showNext === false || current_step >= (data.length - 1)) {
+          if (step_data.showNext === false) {
             $body.enjoyhint("hide_next");
           }
 
@@ -260,13 +258,14 @@
           } else {
             $body.enjoyhint("show_skip");
           }
+          $body.enjoyhint("show_close");
 
 
           if (step_data.nextButton) {
             var $nextBtn = $(".enjoyhint_next_btn");
 
             $nextBtn.addClass(step_data.nextButton.className || "");
-            $nextBtn.text(step_data.nextButton.text || "Next");
+            $nextBtn.text(step_data.nextButton.text || BTN_NEXT_TEXT);
             that.nextUserClass = step_data.nextButton.className;
           }
 
@@ -274,7 +273,7 @@
             var $prevBtn = $(".enjoyhint_prev_btn");
 
             $prevBtn.addClass(step_data.prevButton.className || "");
-            $prevBtn.text(step_data.prevButton.text || "Previous");
+            $prevBtn.text(step_data.prevButton.text || BTN_PREV_TEXT);
             that.prevUserClass = step_data.prevButton.className;
           }
 
@@ -282,7 +281,7 @@
             var $skipBtn = $(".enjoyhint_skip_btn");
 
             $skipBtn.addClass(step_data.skipButton.className || "");
-            $skipBtn.text(step_data.skipButton.text || "Skip");
+            $skipBtn.text(step_data.skipButton.text || BTN_SKIP_TEXT);
             that.skipUserClass = step_data.skipButton.className;
           }
 
@@ -381,7 +380,7 @@
             shape_data.height = h + shape_margin;
           }
 
-          $body.enjoyhint("render_label_with_shape", shape_data, that.stop, customBtnProps);
+          $body.enjoyhint("render", shape_data, that.stop, customBtnProps);
 
         }, scrollSpeed + 20 || 270);
       }, timeout);
@@ -508,5 +507,3 @@
   };
   return EnjoyHint;
 })
-
-
